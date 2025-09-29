@@ -13,13 +13,13 @@ Esta aplicação Spring Boot foi desenvolvida **INTENCIONALMENTE** com vulnerabi
 **Vulnerabilidades simuladas**:
 - ✅ **SQL Injection** - Queries concatenadas permitindo extração de dados
 - ✅ **PII em log** - CPF, senhas e dados financeiros expostos nos logs
-- ✅ **JWT aceito sem revalidar claims** - Tokens inválidos são aceitos
+- ✅ **Endpoints sem proteção** - Configuração permitAll() inadequada
 - ✅ **Dependência vulnerável** - Log4j 2.14.1 (CVE-2021-44228)
 
 **Demonstração de ataques funcionando**:
 - 💥 SQL Injection retorna todos os saldos
 - 💥 Log mostra CPF em claro
-- 💥 Token manipulado acessa dados restritos
+- 💥 Endpoints sensíveis acessíveis sem autenticação
 - 💥 Dependência vulnerável permite RCE
 
 ## 🚀 Como Executar
@@ -76,11 +76,11 @@ curl http://localhost:8080/api/usuarios/listar
 - Análise dos tipos de dados expostos
 - Demonstração de vazamento de informações
 
-**3. JWT Vulnerável** - `./scripts/3_jwt_vulneravel.sh`
-- Token falsificado com algoritmo "none"
-- Token com assinatura incorreta
-- Token expirado aceito
-- Análise técnica das falhas de validação
+**3. Endpoints sem Proteção** - `./scripts/3_endpoints_sem_protecao.sh`
+- Acesso a endpoints sem autenticação
+- Demonstração de configuração permitAll()
+- Exposição de dados sensíveis sem autorização
+- Análise técnica das configurações inadequadas
 
 **4. Dados Expostos** - `./scripts/4_dados_expostos.sh`
 - Listagem de usuários sem autenticação
@@ -111,9 +111,9 @@ curl -s "http://localhost:8080/api/contas/buscar-por-numero/%27%20OR%20%271%27=%
 curl -s "http://localhost:8080/api/usuarios/listar" | jq .
 ```
 
-#### 4. JWT Vulnerável - Teste completo
+#### 4. Endpoints sem Proteção - Teste completo
 ```bash
-./scripts/3_jwt_vulneravel.sh
+./scripts/3_endpoints_sem_protecao.sh
 ```
 
 ### 📊 Dados de Teste Disponíveis
@@ -176,25 +176,21 @@ INFO - Transferência - CPF: 12345678901 de conta 12345-6 para conta 98765-4 no 
 DEBUG - Token JWT gerado: eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiVVNFUiI...
 ```
 
-### 3. 🔑 JWT Inseguro
+### 3. 🔒 Endpoints sem Proteção
 
 **Localização**:
-- `JwtUtil.java:45` - `validateTokenInsecure()`
-- `JwtUtil.java:58` - `extractAllClaimsInsecure()`
-- `JwtAuthenticationFilter.java:45` - Validação insegura
+- `SecurityConfig.java:25` - Configuração permitAll() inadequada
 
 **Problemas**:
-- Aceita tokens com algoritmo "none"
-- Não valida expiração adequadamente
-- Aceita tokens com assinatura inválida
-- Secret exposto nos logs
+- Endpoints sensíveis configurados com permitAll()
+- Dados de usuários acessíveis sem autenticação
+- Configuração de segurança inadequada
 
 **Exploração**:
-```javascript
-// Token falsificado com algoritmo "none"
-Header: {"alg":"none","typ":"JWT"}
-Payload: {"role":"ADMIN","cpf":"99999999999","exp":9999999999}
-Token: eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJyb2xlIjoiQURNSU4iLCJjcGYiOiI5OTk5OTk5OTk5OSIsImV4cCI6OTk5OTk5OTk5OX0.
+```bash
+# Acesso sem qualquer autenticação
+curl -s "http://localhost:8080/api/usuarios/listar"
+# Retorna todos os dados dos usuários
 ```
 
 ### 4. 📦 Dependência Vulnerável
@@ -242,19 +238,17 @@ logger.info("Login - CPF: {}, Senha: {}", cpf, senha);
 logger.info("Login attempt for user with ID: {}", userId);
 ```
 
-### 3. JWT Seguro
+### 3. Configuração de Segurança Adequada
 ```java
-// ✅ Validação adequada
-public Boolean validateToken(String token) {
-    try {
-        Claims claims = Jwts.parser()
-            .setSigningKey(secret)
-            .parseClaimsJws(token)
-            .getBody();
-        return !claims.getExpiration().before(new Date());
-    } catch (JwtException | IllegalArgumentException e) {
-        return false;
-    }
+// ✅ Configuração segura
+@Override
+protected void configure(HttpSecurity http) throws Exception {
+    http.authorizeRequests()
+        .antMatchers("/api/auth/**").permitAll()
+        .anyRequest().authenticated()
+        .and()
+        .csrf().disable()
+        .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 }
 ```
 
@@ -299,7 +293,7 @@ security-demo/
 │   ├── executar_todos.sh (🎯 Menu principal)
 │   ├── 1_sql_injection.sh
 │   ├── 2_pii_logs.sh
-│   ├── 3_jwt_vulneravel.sh
+│   ├── 3_endpoints_sem_protecao.sh
 │   ├── 4_dados_expostos.sh
 │   └── 5_dependencia_vulneravel.sh
 └── README.md
