@@ -1,6 +1,6 @@
 package com.demo.security.model;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "usuarios")

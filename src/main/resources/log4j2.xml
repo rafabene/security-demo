@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ⚠️  CONFIGURAÇÃO VULNERÁVEL DO LOG4J PARA FINS EDUCATIVOS ⚠️ -->
+<!-- NÃO USE EM PRODUÇÃO! -->
+<Configuration status="WARN" shutdownHook="disable">
+    <Appenders>
+        <!-- Console Appender -->
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+        </Console>
+
+        <!-- File Appender para capturar logs com JNDI -->
+        <File name="FileAppender" fileName="logs/security-demo.log">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+        </File>
+    </Appenders>
+
+    <Loggers>
+        <!-- Logger específico para demonstrar Log4Shell -->
+        <Logger name="com.demo.security" level="DEBUG" additivity="false">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="FileAppender"/>
+        </Logger>
+
+        <!-- Logger para capturar tentativas JNDI -->
+        <Logger name="org.apache.logging.log4j.core.lookup" level="DEBUG" additivity="false">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="FileAppender"/>
+        </Logger>
+
+        <!-- Root logger -->
+        <Root level="INFO">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="FileAppender"/>
+        </Root>
+    </Loggers>
+</Configuration>

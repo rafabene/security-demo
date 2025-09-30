@@ -2,7 +2,7 @@ package com.demo.security.config;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,11 +42,11 @@ public class JwtUtil {
 
     private String createToken(Map<String, Object> claims, String subject) {
         return Jwts.builder()
-                .setClaims(claims)
-                .setSubject(subject)
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + expiration))
-                .signWith(SignatureAlgorithm.HS256, secret)
+                .claims(claims)
+                .subject(subject)
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + expiration))
+                .signWith(Keys.hmacShaKeyFor(secret.getBytes()))
                 .compact();
     }
 
@@ -56,7 +56,7 @@ public class JwtUtil {
             // VULNERABILIDADE: Log do token sendo validado
             logger.debug("Validando token: {}", token);
 
-            Claims claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
+            Claims claims = Jwts.parser().verifyWith(Keys.hmacShaKeyFor(secret.getBytes())).build().parseSignedClaims(token).getPayload();
 
             // VULNERABILIDADE: Log dos claims do token
             logger.debug("Claims extraídos do token: {}", claims);
@@ -78,14 +78,14 @@ public class JwtUtil {
             if (tokenParts.length == 3) {
                 logger.debug("Extraindo claims sem validação de assinatura do token: {}", token);
                 // Decodifica apenas o payload sem verificar assinatura
-                return Jwts.parser().parseClaimsJwt(tokenParts[0] + "." + tokenParts[1] + ".").getBody();
+                return Jwts.parser().build().parseUnsecuredClaims(tokenParts[0] + "." + tokenParts[1] + ".").getPayload();
             }
         } catch (Exception e) {
             logger.debug("Tentando extração insegura de claims: {}", e.getMessage());
         }
 
         // Fallback para método normal (ainda com problemas)
-        return Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
+        return Jwts.parser().verifyWith(Keys.hmacShaKeyFor(secret.getBytes())).build().parseSignedClaims(token).getPayload();
     }
 
     public String extractCpf(String token) {

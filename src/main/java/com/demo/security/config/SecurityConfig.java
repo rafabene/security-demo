@@ -2,8 +2,10 @@ package com.demo.security.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -11,6 +13,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true) // Substitui @EnableGlobalMethodSecurity
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
@@ -21,27 +24,29 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf().disable()
-            .authorizeRequests()
+        return http
+            .csrf(AbstractHttpConfigurer::disable) // Nova sintaxe Spring Boot 3.x
+            .authorizeHttpRequests(auth -> auth // authorizeRequests → authorizeHttpRequests
                 // VULNERABILIDADE: Endpoints sensíveis sem autenticação
-                .antMatchers("/api/auth/**").permitAll()
-                .antMatchers("/api/usuarios/**").permitAll() // VULNERABILIDADE: Acesso livre aos usuários
-                .antMatchers("/h2-console/**").permitAll()
-                .antMatchers("/api/contas/buscar-por-saldo/**").permitAll() // VULNERABILIDADE: Consulta de saldos sem auth
-                .antMatchers("/api/vulneravel/**").permitAll() // VULNERABILIDADE: Endpoints com SQL Injection real
-                .antMatchers("/error").permitAll() // Permite acesso ao endpoint de erro para evitar stack traces desnecessários
+                .requestMatchers("/api/auth/**").permitAll() // antMatchers → requestMatchers
+                .requestMatchers("/api/usuarios/**").permitAll() // VULNERABILIDADE: Acesso livre aos usuários
+                .requestMatchers("/h2-console/**").permitAll()
+                .requestMatchers("/api/contas/buscar-por-saldo/**").permitAll() // VULNERABILIDADE: Consulta de saldos sem auth
+                .requestMatchers("/api/vulneravel/**").permitAll() // VULNERABILIDADE: Endpoints com SQL Injection real
+                .requestMatchers("/error").permitAll() // Permite acesso ao endpoint de erro para evitar stack traces desnecessários
                 .anyRequest().authenticated()
-            .and()
-            .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            .and()
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-
-        // VULNERABILIDADE: Headers de segurança desabilitados
-        http.headers().frameOptions().disable();
-        http.headers().httpStrictTransportSecurity().disable();
-        http.headers().contentTypeOptions().disable();
-
-        return http.build();
+            )
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            )
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+            .headers(headers -> headers
+                // VULNERABILIDADE: Headers de segurança desabilitados
+                .frameOptions(frameOptions -> frameOptions.disable())
+                .httpStrictTransportSecurity(hstsConfig -> hstsConfig.disable())
+                .contentTypeOptions(contentTypeOptions -> contentTypeOptions.disable())
+            )
+            .build();
     }
 
     @Bean
