@@ -33,6 +33,7 @@ public class SecurityConfig {
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/api/contas/buscar-por-saldo/**").permitAll() // VULNERABILIDADE: Consulta de saldos sem auth
                 .requestMatchers("/api/vulneravel/**").permitAll() // VULNERABILIDADE: Endpoints com SQL Injection real
+                .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers("/error").permitAll() // Permite acesso ao endpoint de erro para evitar stack traces desnecessários
                 .anyRequest().authenticated()
             )
