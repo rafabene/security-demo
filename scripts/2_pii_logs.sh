@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Script para demonstrar PII em logs
-# ⚠️  APENAS PARA FINS EDUCATIVOS ⚠️
+# APENAS PARA FINS EDUCATIVOS
 
 echo "========================================"
 echo "   VULNERABILIDADE: PII EM LOGS"
@@ -10,19 +10,19 @@ echo
 
 BASE_URL="http://localhost:8080"
 
-echo "🔴 DEMONSTRAÇÃO: PII (Dados Pessoais) em Logs"
+echo "DEMONSTRAÇÃO: PII (Dados Pessoais) em Logs"
 echo
 
 # Função para orientar o usuário sobre onde ver os logs
 show_logs_info() {
-    echo "📋 VERIFIQUE OS LOGS NO CONSOLE DA APLICAÇÃO:"
-    echo "👀 Os logs com dados sensíveis aparecerão no console onde a aplicação está rodando"
-    echo "🔍 Procure por linhas contendo: CPF, Senha, Token, Login, Usuario"
+    echo "VERIFIQUE OS LOGS NO CONSOLE DA APLICAÇÃO:"
+    echo "Os logs com dados sensíveis aparecerão no console onde a aplicação está rodando"
+    echo "Procure por linhas contendo: CPF, Senha, Token, Login, Usuario"
     echo
 }
 
 # 1. Gerar logs através de registro de usuário
-echo "1️⃣  Gerando logs através de registro de usuário"
+echo "1. Gerando logs através de registro de usuário"
 echo "-----------------------------------------------"
 echo "Endpoint: POST /api/auth/register"
 echo
@@ -37,12 +37,12 @@ curl -s -X POST "$BASE_URL/api/auth/register" \
     "email": "teste@vulneravel.com"
   }' > /dev/null
 
-echo "✅ Requisição enviada"
+echo "Requisição enviada"
 echo
 show_logs_info
 
 # 2. Gerar logs através de login
-echo "2️⃣  Gerando logs através de tentativa de login"
+echo "2. Gerando logs através de tentativa de login"
 echo "----------------------------------------------"
 echo "Endpoint: POST /api/auth/login"
 echo
@@ -55,12 +55,12 @@ curl -s -X POST "$BASE_URL/api/auth/login" \
     "senha": "senha_teste"
   }' > /dev/null
 
-echo "✅ Tentativa de login enviada"
+echo "Tentativa de login enviada"
 echo
 show_logs_info
 
 # 3. Gerar logs através de transferência
-echo "3️⃣  Gerando logs através de transferência bancária"
+echo "3. Gerando logs através de transferência bancária"
 echo "-------------------------------------------------"
 echo "Endpoint: POST /api/transacoes/transferir"
 echo
@@ -75,7 +75,7 @@ curl -s -X POST "$BASE_URL/api/transacoes/transferir" \
     "cpfUsuario": "12345678901"
   }' > /dev/null
 
-echo "✅ Transferência enviada"
+echo "Transferência enviada"
 echo
 show_logs_info
 

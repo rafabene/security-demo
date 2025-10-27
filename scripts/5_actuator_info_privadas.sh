@@ -26,12 +26,12 @@ if ! brew list --cask visualvm &> /dev/null; then
     echo "VisualVM não encontrado. Tentando instalar via Homebrew (pode pedir sua senha)..."
     brew install --cask visualvm
     if ! brew list --cask visualvm &> /dev/null; then
-        echo "❌ Falha ao instalar o VisualVM. Por favor, instale-o manualmente e tente novamente."
+        echo "Falha ao instalar o VisualVM. Por favor, instale-o manualmente e tente novamente."
         exit 1
     fi
-    echo "✅ VisualVM instalado com sucesso."
+    echo "VisualVM instalado com sucesso."
 else
-    echo "✅ VisualVM já está instalado."
+    echo "VisualVM já está instalado."
 fi
 echo ""
 
@@ -40,12 +40,12 @@ echo "-----------------------------------------------------------------"
 echo "Acessando o endpoint: /actuator/heapdump"
 echo "-----------------------------------------------------------------"
 
-echo "➡️  Baixando o heapdump (pode levar alguns segundos)..."
+echo "Baixando o heapdump (pode levar alguns segundos)..."
 curl -o heapdump.hprof http://localhost:8080/actuator/heapdump
 
 if [ -f "heapdump.hprof" ]; then
     FILE_SIZE=$(du -h "heapdump.hprof" | cut -f1)
-    echo "✅ Heapdump baixado com sucesso!"
+    echo "Heapdump baixado com sucesso!"
     echo "   - Arquivo: heapdump.hprof"
     echo "   - Tamanho: $FILE_SIZE"
     echo ""
@@ -73,6 +73,6 @@ if [ -f "heapdump.hprof" ]; then
     echo "================================================================="
 
 else
-    echo "❌ Falha ao baixar o heapdump."
+    echo "Falha ao baixar o heapdump."
     echo "Verifique se a aplicação está rodando e se o endpoint /actuator/heapdump está habilitado e acessível."
 fi
